@@ -1,47 +1,75 @@
 const express = require('express');
-const itemRouter =  express.Router();
+const Item =  require('../models/items');
+
+const itemRouter = express.Router();
 
 itemRouter.route('/')
-.all((req, res, next) => {
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'text/plain');
-    next();
+.get((req, res, next) => {
+    Item.find()
+    .then(item => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(item);
+    })
+    .catch(err => next(err));
 })
-.get((req, res) => {
-    res.end('Will send all the items to you');
-})
-.post((req, res) => {
-    res.end(`Will add the item: ${req.body.name} with description: ${req.body.description}`);
+.post((req, res, next) => {
+    Item.create(req.body)
+    .then(item => {
+        console.log('Item Created ', item);
+        res.statusCode = 201;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(item);
+    })
+    .catch(err => next(err));
 })
 .put((req, res) => {
-    res.statusCode = 403;
+    res.statusCode = 405;
     res.end('PUT operation not supported on /items');
 })
-.delete((req, res) => {
-    res.end('Deleting all items');
+.delete((req, res, next) => {
+    Item.deleteMany()
+    .then(response => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(response);
+    })
+    .catch(err => next(err));
 });
 
 itemRouter.route('/:itemId')
-.all((req, res, next) => {
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'text/plain');
-    next();
-})
-.get((req, res) => {
-    res.end(`Will send details of the item: ${req.params.itemId} to you`);
+.get((req, res, next) => {
+    Item.findById(req.params.itemId)
+    .then(item => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(item);
+    })
+    .catch(err => next(err));
 })
 .post((req, res) => {
-    res.statusCode = 403;
+    res.statusCode = 405;
     res.end(`POST operation not supported on /items/${req.params.itemId}`);
 })
-.put((req, res) => {
-    res.write(`Updating the item: ${req.params.itemId}\n`);
-    res.end(`Will update the item: ${req.body.name}
-        with description: ${req.body.description}`);
+.put((req, res, next) => {
+    Item.findByIdAndUpdate(req.params.itemId, {
+        $set: req.body
+    }, { new: true })
+    .then(item => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(item);
+    })
+    .catch(err => next(err));
 })
-.delete((req, res) => {
-    res.end(`Deleting item: ${req.params.itemId}`);
+.delete((req, res, next) => {
+   Item.findByIdAndDelete(req.params.itemId)
+    .then(response => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(response);
+    })
+    .catch(err => next(err));
 });
-
 
 module.exports = itemRouter;

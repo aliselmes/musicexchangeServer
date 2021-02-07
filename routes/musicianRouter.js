@@ -1,46 +1,75 @@
 const express = require('express');
-const musicianRouter =  express.Router();
+const Musician =  require('../models/musicians');
+
+const musicianRouter = express.Router();
 
 musicianRouter.route('/')
-.all((req, res, next) => {
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'text/plain');
-    next();
+.get((req, res, next) => {
+    Musician.find()
+    .then(musician => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(musician);
+    })
+    .catch(err => next(err));
 })
-.get((req, res) => {
-    res.end('Will send all the musicians to you');
-})
-.post((req, res) => {
-    res.end(`Will add the musician: ${req.body.name} with description: ${req.body.description}`);
+.post((req, res, next) => {
+    Musician.create(req.body)
+    .then(musician => {
+        console.log('Musician Created ', musician);
+        res.statusCode = 201;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(musician);
+    })
+    .catch(err => next(err));
 })
 .put((req, res) => {
-    res.statusCode = 403;
+    res.statusCode = 405;
     res.end('PUT operation not supported on /musicians');
 })
-.delete((req, res) => {
-    res.end('Deleting all musicians');
+.delete((req, res, next) => {
+    Musician.deleteMany()
+    .then(response => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(response);
+    })
+    .catch(err => next(err));
 });
 
 musicianRouter.route('/:musicianId')
-.all((req, res, next) => {
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'text/plain');
-    next();
-})
-.get((req, res) => {
-    res.end(`Will send details of the musician: ${req.params.musicianId} to you`);
+.get((req, res, next) => {
+    Musician.findById(req.params.musicianId)
+    .then(musician => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(musician);
+    })
+    .catch(err => next(err));
 })
 .post((req, res) => {
-    res.statusCode = 403;
+    res.statusCode = 405;
     res.end(`POST operation not supported on /musicians/${req.params.musicianId}`);
 })
-.put((req, res) => {
-    res.write(`Updating the musician: ${req.params.musicianId}\n`);
-    res.end(`Will update the musician: ${req.body.name}
-        with description: ${req.body.description}`);
+.put((req, res, next) => {
+    Musician.findByIdAndUpdate(req.params.musicianId, {
+        $set: req.body
+    }, { new: true })
+    .then(musician => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(musician);
+    })
+    .catch(err => next(err));
 })
-.delete((req, res) => {
-    res.end(`Deleting musician: ${req.params.musicianId}`);
+.delete((req, res, next) => {
+   Musician.findByIdAndDelete(req.params.musicianId)
+    .then(response => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(response);
+    })
+    .catch(err => next(err));
 });
 
 module.exports = musicianRouter;

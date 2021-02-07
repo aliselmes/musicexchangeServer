@@ -1,46 +1,75 @@
 const express = require('express');
-const instructorRouter =  express.Router();
+const Instructor =  require('../models/instructors');
+
+const instructorRouter = express.Router();
 
 instructorRouter.route('/')
-.all((req, res, next) => {
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'text/plain');
-    next();
+.get((req, res, next) => {
+    Instructor.find()
+    .then(instructor => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(instructor);
+    })
+    .catch(err => next(err));
 })
-.get((req, res) => {
-    res.end('Will send all the instructors to you');
-})
-.post((req, res) => {
-    res.end(`Will add the instructor: ${req.body.name} with description: ${req.body.description}`);
+.post((req, res, next) => {
+    Instructor.create(req.body)
+    .then(instructor => {
+        console.log('Instructor Created ', instructor);
+        res.statusCode = 201;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(instructor);
+    })
+    .catch(err => next(err));
 })
 .put((req, res) => {
-    res.statusCode = 403;
+    res.statusCode = 405;
     res.end('PUT operation not supported on /instructors');
 })
-.delete((req, res) => {
-    res.end('Deleting all instructors');
+.delete((req, res, next) => {
+    Instructor.deleteMany()
+    .then(response => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(response);
+    })
+    .catch(err => next(err));
 });
 
 instructorRouter.route('/:instructorId')
-.all((req, res, next) => {
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'text/plain');
-    next();
-})
-.get((req, res) => {
-    res.end(`Will send details of the instructor: ${req.params.instructorId} to you`);
+.get((req, res, next) => {
+    Instructor.findById(req.params.instructorId)
+    .then(instructor => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(instructor);
+    })
+    .catch(err => next(err));
 })
 .post((req, res) => {
-    res.statusCode = 403;
+    res.statusCode = 405;
     res.end(`POST operation not supported on /instructors/${req.params.instructorId}`);
 })
-.put((req, res) => {
-    res.write(`Updating the instructor: ${req.params.instructorId}\n`);
-    res.end(`Will update the instructor: ${req.body.name}
-        with description: ${req.body.description}`);
+.put((req, res, next) => {
+    Instructor.findByIdAndUpdate(req.params.instructorId, {
+        $set: req.body
+    }, { new: true })
+    .then(instructor => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(instructor);
+    })
+    .catch(err => next(err));
 })
-.delete((req, res) => {
-    res.end(`Deleting instructor: ${req.params.instructorId}`);
+.delete((req, res, next) => {
+   Instructor.findByIdAndDelete(req.params.instructorId)
+    .then(response => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(response);
+    })
+    .catch(err => next(err));
 });
 
 module.exports = instructorRouter;

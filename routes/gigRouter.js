@@ -1,47 +1,76 @@
 
 const express = require('express');
-const gigRouter =  express.Router();
+const Gig =  require('../models/gigs');
+
+const gigRouter = express.Router();
 
 gigRouter.route('/')
-.all((req, res, next) => {
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'text/plain');
-    next();
+.get((req, res, next) => {
+    Gig.find()
+    .then(gigs => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(gigs);
+    })
+    .catch(err => next(err));
 })
-.get((req, res) => {
-    res.end('Will send all the gigs to you');
-})
-.post((req, res) => {
-    res.end(`Will add the gig: ${req.body.name} with description: ${req.body.description}`);
+.post((req, res, next) => {
+    Gig.create(req.body)
+    .then(gig => {
+        console.log('Gig Created ', gig);
+        res.statusCode = 201;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(gig);
+    })
+    .catch(err => next(err));
 })
 .put((req, res) => {
-    res.statusCode = 403;
+    res.statusCode = 405;
     res.end('PUT operation not supported on /gigs');
 })
-.delete((req, res) => {
-    res.end('Deleting all gigs');
+.delete((req, res, next) => {
+    Gig.deleteMany()
+    .then(response => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(response);
+    })
+    .catch(err => next(err));
 });
 
 gigRouter.route('/:gigId')
-.all((req, res, next) => {
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'text/plain');
-    next();
-})
-.get((req, res) => {
-    res.end(`Will send details of the gig: ${req.params.gigId} to you`);
+.get((req, res, next) => {
+    Gig.findById(req.params.gigId)
+    .then(gig => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(gig);
+    })
+    .catch(err => next(err));
 })
 .post((req, res) => {
-    res.statusCode = 403;
+    res.statusCode = 405;
     res.end(`POST operation not supported on /gigs/${req.params.gigId}`);
 })
-.put((req, res) => {
-    res.write(`Updating the gig: ${req.params.gigId}\n`);
-    res.end(`Will update the gig: ${req.body.name}
-        with description: ${req.body.description}`);
+.put((req, res, next) => {
+    Gig.findByIdAndUpdate(req.params.gigId, {
+        $set: req.body
+    }, { new: true })
+    .then(gig => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(gig);
+    })
+    .catch(err => next(err));
 })
-.delete((req, res) => {
-    res.end(`Deleting gig: ${req.params.gigId}`);
+.delete((req, res, next) => {
+    Gig.findByIdAndDelete(req.params.gigId)
+    .then(response => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(response);
+    })
+    .catch(err => next(err));
 });
 
 module.exports = gigRouter;
