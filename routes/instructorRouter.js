@@ -1,5 +1,6 @@
 const express = require('express');
 const Instructor =  require('../models/instructors');
+const authenticate = require('../authenticate');
 
 const instructorRouter = express.Router();
 
@@ -13,7 +14,7 @@ instructorRouter.route('/')
     })
     .catch(err => next(err));
 })
-.post((req, res, next) => {
+.post(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Instructor.create(req.body)
     .then(instructor => {
         console.log('Instructor Created ', instructor);
