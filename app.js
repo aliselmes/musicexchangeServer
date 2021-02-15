@@ -14,7 +14,7 @@ const musicianRouter = require('./routes/musicianRouter');
 
 const mongoose = require('mongoose');
 
-const url = 'mongodb://localhost:27017/themusicexchange';
+const url = config.mongoUrl;
 const connect = mongoose.connect(url, {
     useCreateIndex: true,
     useFindAndModify: false,

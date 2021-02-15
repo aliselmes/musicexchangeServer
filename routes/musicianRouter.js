@@ -1,5 +1,6 @@
 const express = require('express');
 const Musician =  require('../models/musicians');
+const authenticate = require('../authenticate');
 
 const musicianRouter = express.Router();
 
@@ -13,7 +14,8 @@ musicianRouter.route('/')
     })
     .catch(err => next(err));
 })
-.post((req, res, next) => {
+.post(authenticate.verifyUser, (req, res, next) => {
+    req.body.author = req.user._id;
     Musician.create(req.body)
     .then(musician => {
         console.log('Musician Created ', musician);
@@ -23,11 +25,11 @@ musicianRouter.route('/')
     })
     .catch(err => next(err));
 })
-.put((req, res) => {
+.put(authenticate.verifyUser, (req, res) => {
     res.statusCode = 405;
     res.end('PUT operation not supported on /musicians');
 })
-.delete((req, res, next) => {
+.delete(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Musician.deleteMany()
     .then(response => {
         res.statusCode = 200;
@@ -51,23 +53,63 @@ musicianRouter.route('/:musicianId')
     res.statusCode = 405;
     res.end(`POST operation not supported on /musicians/${req.params.musicianId}`);
 })
-.put((req, res, next) => {
-    Musician.findByIdAndUpdate(req.params.musicianId, {
-        $set: req.body
-    }, { new: true })
+.put(authenticate.verifyUser, (req, res, next) => {
+    console.log(req.user);
+    Musician.findById(req.params.musicianId)
+    .populate('author')
     .then(musician => {
-        res.statusCode = 200;
-        res.setHeader('Content-Type', 'application/json');
-        res.json(musician);
+        if (musician) {
+            console.log(musician);
+            console.log(typeof musician);
+            if (req.user._id.equals(musician.author._id)) {
+                Musician.findByIdAndUpdate(req.params.musicianId, {  
+                    $set: req.body
+                }, { new: true })
+                .then(musician => {
+                    res.statusCode = 200;
+                    res.setHeader('Content-Type', 'application/json'); 
+                    res.json(musician); 
+                })
+                .catch(err => next(err));
+            } else {
+                const err = new Error('Operation not authorized!');
+                err.status = 403;
+                return next(err);
+            }
+        } else {
+            const err = new Error(`Musician ${req.params.musicianId} not found`);
+            err.status = 404;
+            return next(err);
+        }
     })
-    .catch(err => next(err));
+    .catch(err => next(err))
 })
-.delete((req, res, next) => {
-   Musician.findByIdAndDelete(req.params.musicianId)
-    .then(response => {
-        res.statusCode = 200;
-        res.setHeader('Content-Type', 'application/json');
-        res.json(response);
+.delete(authenticate.verifyUser, (req, res, next) => {
+    console.log(req.user);
+    Musician.findById(req.params.musicianId)
+    .populate('author')
+    .then(musician => {
+        if (musician) {
+            console.log(musician);
+            console.log(typeof musician);
+            if (req.user._id.equals(musician.author._id)) {
+                Musician.findByIdAndDelete(req.params.musicianId)
+                .then(response => {
+                    res.statusCode = 200;
+                    res.setHeader('Content-Type', 'application/json');
+                    res.json(response);
+                })
+                .catch(err => next(err));
+            } else {
+                const err = new Error('Operation not authorized!');
+                err.status = 403;
+                return next(err);
+            }
+        } else {
+            const err = new Error(`Musician ${req.params.musicianId} not found`);
+            err.status = 404;
+            return next(err);
+        }
     })
     .catch(err => next(err));
 });

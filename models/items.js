@@ -33,6 +33,10 @@ const itemSchema = new Schema({
     featured: {
         type: Boolean,
         default: false
+    },
+    author: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
     }
 }, {
     timestamps: true

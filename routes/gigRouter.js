@@ -54,7 +54,6 @@ gigRouter.route('/:gigId')
     res.statusCode = 405;
     res.end(`POST operation not supported on /gigs/${req.params.gigId}`);
 })
-//Need to update this PUT so only the user who created the gig can update it.
 .put(authenticate.verifyUser, (req, res, next) => {
     console.log(req.user);
     Gig.findById(req.params.gigId)
