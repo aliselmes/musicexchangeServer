@@ -1,11 +1,13 @@
 const express = require('express');
 const Gig =  require('../models/gigs');
 const authenticate = require('../authenticate');
+const cors = require('./cors');
 
 const gigRouter = express.Router();
 
 gigRouter.route('/')
-.get((req, res, next) => {
+.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+.get(cors.cors, (req, res, next) => {
     Gig.find()
     .then(gigs => {
         res.statusCode = 200;
@@ -14,7 +16,7 @@ gigRouter.route('/')
     })
     .catch(err => next(err));
 })
-.post(authenticate.verifyUser, (req, res, next) => {
+.post(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
     console.log(req.user);
     req.body.author = req.user._id;
     Gig.create(req.body)
@@ -26,11 +28,11 @@ gigRouter.route('/')
     })
     .catch(err => next(err));
 })
-.put(authenticate.verifyUser, (req, res) => {
+.put(cors.corsWithOptions, authenticate.verifyUser, (req, res) => {
     res.statusCode = 405;
     res.end('PUT operation not supported on /gigs');
 })
-.delete(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+.delete(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Gig.deleteMany()
     .then(response => {
         res.statusCode = 200;
@@ -41,7 +43,8 @@ gigRouter.route('/')
 });
 
 gigRouter.route('/:gigId')
-.get((req, res, next) => {
+.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+.get(cors.cors, (req, res, next) => {
     Gig.findById(req.params.gigId)
     .then(gig => {
         res.statusCode = 200;
@@ -50,11 +53,11 @@ gigRouter.route('/:gigId')
     })
     .catch(err => next(err));
 })
-.post(authenticate.verifyUser, (req, res) => {
+.post(cors.corsWithOptions, authenticate.verifyUser, (req, res) => {
     res.statusCode = 405;
     res.end(`POST operation not supported on /gigs/${req.params.gigId}`);
 })
-.put(authenticate.verifyUser, (req, res, next) => {
+.put(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
     console.log(req.user);
     Gig.findById(req.params.gigId)
     .populate('author')
@@ -85,7 +88,7 @@ gigRouter.route('/:gigId')
     })
     .catch(err => next(err));
 })
-.delete(authenticate.verifyUser, (req, res, next) => {
+.delete(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
     console.log(req.user);
     Gig.findById(req.params.gigId)
     .populate('author')

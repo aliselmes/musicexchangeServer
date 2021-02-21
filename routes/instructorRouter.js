@@ -1,11 +1,13 @@
 const express = require('express');
 const Instructor =  require('../models/instructors');
 const authenticate = require('../authenticate');
+const cors = require('./cors');
 
 const instructorRouter = express.Router();
 
 instructorRouter.route('/')
-.get((req, res, next) => {
+.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+.get(cors.cors, (req, res, next) => {
     Instructor.find()
     .then(instructor => {
         res.statusCode = 200;
@@ -14,7 +16,7 @@ instructorRouter.route('/')
     })
     .catch(err => next(err));
 })
-.post(authenticate.verifyUser, (req, res, next) => {
+.post(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
     req.body.author = req.user._id;
     Instructor.create(req.body)
     .then(instructor => {
@@ -25,11 +27,11 @@ instructorRouter.route('/')
     })
     .catch(err => next(err));
 })
-.put(authenticate.verifyUser, (req, res) => {
+.put(cors.corsWithOptions, authenticate.verifyUser, (req, res) => {
     res.statusCode = 405;
     res.end('PUT operation not supported on /instructors');
 })
-.delete(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+.delete(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Instructor.deleteMany()
     .then(response => {
         res.statusCode = 200;
@@ -40,7 +42,8 @@ instructorRouter.route('/')
 });
 
 instructorRouter.route('/:instructorId')
-.get((req, res, next) => {
+.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+.get(cors.cors, (req, res, next) => {
     Instructor.findById(req.params.instructorId)
     .then(instructor => {
         res.statusCode = 200;
@@ -49,11 +52,11 @@ instructorRouter.route('/:instructorId')
     })
     .catch(err => next(err));
 })
-.post((req, res) => {
+.post(cors.corsWithOptions, (req, res) => {
     res.statusCode = 405;
     res.end(`POST operation not supported on /instructors/${req.params.instructorId}`);
 })
-.put(authenticate.verifyUser, (req, res, next) => {
+.put(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
     console.log(req.user);
     Instructor.findById(req.params.instructorId)
     .populate('author')
@@ -84,7 +87,7 @@ instructorRouter.route('/:instructorId')
     })
     .catch(err => next(err))
 })
-.delete(authenticate.verifyUser, (req, res, next) => {
+.delete(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
     console.log(req.user);
     Instructor.findById(req.params.instructorId)
     .populate('author')

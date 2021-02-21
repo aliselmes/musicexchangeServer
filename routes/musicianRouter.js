@@ -1,11 +1,13 @@
 const express = require('express');
 const Musician =  require('../models/musicians');
 const authenticate = require('../authenticate');
+const cors = require('./cors');
 
 const musicianRouter = express.Router();
 
 musicianRouter.route('/')
-.get((req, res, next) => {
+.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+.get(cors.cors, (req, res, next) => {
     Musician.find()
     .then(musician => {
         res.statusCode = 200;
@@ -14,7 +16,7 @@ musicianRouter.route('/')
     })
     .catch(err => next(err));
 })
-.post(authenticate.verifyUser, (req, res, next) => {
+.post(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
     req.body.author = req.user._id;
     Musician.create(req.body)
     .then(musician => {
@@ -25,11 +27,11 @@ musicianRouter.route('/')
     })
     .catch(err => next(err));
 })
-.put(authenticate.verifyUser, (req, res) => {
+.put(cors.corsWithOptions, authenticate.verifyUser, (req, res) => {
     res.statusCode = 405;
     res.end('PUT operation not supported on /musicians');
 })
-.delete(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+.delete(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Musician.deleteMany()
     .then(response => {
         res.statusCode = 200;
@@ -40,7 +42,8 @@ musicianRouter.route('/')
 });
 
 musicianRouter.route('/:musicianId')
-.get((req, res, next) => {
+.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+.get(cors.cors, (req, res, next) => {
     Musician.findById(req.params.musicianId)
     .then(musician => {
         res.statusCode = 200;
@@ -49,11 +52,11 @@ musicianRouter.route('/:musicianId')
     })
     .catch(err => next(err));
 })
-.post((req, res) => {
+.post(cors.corsWithOptions, (req, res) => {
     res.statusCode = 405;
     res.end(`POST operation not supported on /musicians/${req.params.musicianId}`);
 })
-.put(authenticate.verifyUser, (req, res, next) => {
+.put(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
     console.log(req.user);
     Musician.findById(req.params.musicianId)
     .populate('author')
@@ -84,7 +87,7 @@ musicianRouter.route('/:musicianId')
     })
     .catch(err => next(err))
 })
-.delete(authenticate.verifyUser, (req, res, next) => {
+.delete(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
     console.log(req.user);
     Musician.findById(req.params.musicianId)
     .populate('author')

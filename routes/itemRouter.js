@@ -1,11 +1,13 @@
 const express = require('express');
 const Item =  require('../models/items');
 const authenticate = require('../authenticate');
+const cors = require('./cors');
 
 const itemRouter = express.Router();
 
 itemRouter.route('/')
-.get((req, res, next) => {
+.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+.get(cors.cors, (req, res, next) => {
     Item.find()
     .then(item => {
         res.statusCode = 200;
@@ -14,7 +16,7 @@ itemRouter.route('/')
     })
     .catch(err => next(err));
 })
-.post(authenticate.verifyUser, (req, res, next) => {
+.post(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
     req.body.author = req.user._id;
     Item.create(req.body)
     .then(item => {
@@ -25,11 +27,11 @@ itemRouter.route('/')
     })
     .catch(err => next(err));
 })
-.put(authenticate.verifyUser, (req, res) => {
+.put(cors.corsWithOptions, authenticate.verifyUser, (req, res) => {
     res.statusCode = 405;
     res.end('PUT operation not supported on /items');
 })
-.delete(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+.delete(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Item.deleteMany()
     .then(response => {
         res.statusCode = 200;
@@ -40,7 +42,8 @@ itemRouter.route('/')
 });
 
 itemRouter.route('/:itemId')
-.get((req, res, next) => {
+.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+.get(cors.cors, (req, res, next) => {
     Item.findById(req.params.itemId)
     .then(item => {
         res.statusCode = 200;
@@ -49,11 +52,11 @@ itemRouter.route('/:itemId')
     })
     .catch(err => next(err));
 })
-.post((req, res) => {
+.post(cors.corsWithOptions, (req, res) => {
     res.statusCode = 405;
     res.end(`POST operation not supported on /items/${req.params.itemId}`);
 })
-.put(authenticate.verifyUser, (req, res, next) => {
+.put(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
     console.log(req.user);
     Item.findById(req.params.itemId)
     .populate('author')
@@ -84,7 +87,7 @@ itemRouter.route('/:itemId')
     })
     .catch(err => next(err))
 })
-.delete(authenticate.verifyUser, (req, res, next) => {
+.delete(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
     console.log(req.user);
     Item.findById(req.params.itemId)
     .populate('author')
