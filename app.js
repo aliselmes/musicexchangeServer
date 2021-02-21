@@ -11,6 +11,7 @@ const gigRouter = require('./routes/gigRouter');
 const instructorRouter = require('./routes/instructorRouter');
 const itemRouter = require('./routes/itemRouter.js');
 const musicianRouter = require('./routes/musicianRouter');
+const uploadRouter = require('./routes/uploadRouter');
 
 const mongoose = require('mongoose');
 
@@ -59,6 +60,7 @@ app.use('/gigs', gigRouter);
 app.use('/instructors', instructorRouter);
 app.use('/items', itemRouter);
 app.use('/musicians', musicianRouter);
+app.use('/imageUpload', uploadRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
