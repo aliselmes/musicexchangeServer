@@ -2,3 +2,5 @@ node_modules
 bin
 config.js
 public/index.html
+data
+initial-data 
