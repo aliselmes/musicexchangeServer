@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const musicianSchema = new Schema({
-    name: {
+    title: {
         type: String,
         required: true,
     },
@@ -10,7 +10,11 @@ const musicianSchema = new Schema({
         type: String,
         required: true
     },
-    description: {
+    email: {
+        type: String,
+        required: true
+    },
+    message: {
         type: String,
         required: true
     },
@@ -23,7 +27,7 @@ const musicianSchema = new Schema({
         ref: 'User'
     }
 }, {
-    timestamps: true
+    timestamps: true 
 });
 
 const Musician = mongoose.model('Musician', musicianSchema);

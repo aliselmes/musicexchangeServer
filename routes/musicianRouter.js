@@ -38,7 +38,7 @@ musicianRouter.route('/')
         res.setHeader('Content-Type', 'application/json');
         res.json(response);
     })
-    .catch(err => next(err));
+    .catch(err => next(err)); 
 });
 
 musicianRouter.route('/:musicianId')
