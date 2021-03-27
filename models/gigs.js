@@ -14,7 +14,7 @@ const gigSchema = new Schema({
         required: true
     },
     date: {
-        type: Date,
+        type: String,
         required: true
     },
     time: {
@@ -22,14 +22,18 @@ const gigSchema = new Schema({
         required: true
     },
     pay: {
-        type: Currency,
+        type: String,
         required: true,
         min: 0
+    },
+    email: {
+        type: String,
+        required: true
     },
     description: {
         type: String,
         required: true
-    },
+    }, 
     featured: {
         type: Boolean,
         default: false

@@ -32,4 +32,4 @@ const musicianSchema = new Schema({
 
 const Musician = mongoose.model('Musician', musicianSchema);
 
-module.exports = Musician;
+module.exports = Musician; 
